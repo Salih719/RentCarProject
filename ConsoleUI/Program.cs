@@ -1,6 +1,7 @@
 ﻿using Business.Concrete;
 using DataAccess.Concrete;
 using DataAccess.Concrete.EntityFramework;
+using Entities.Concrete;
 using System;
 
 namespace ConsoleUI
@@ -9,41 +10,50 @@ namespace ConsoleUI
     {
         static void Main(string[] args)
         {
-            //Get All
+            //CarTest();
+
+            //RentalManager rentalManager = new RentalManager(new EfRentalDal());
+            //var result = rentalManager.Add(new Rental { RentDate = DateTime.Now, ReturnDate = DateTime.Now, CarId = 1, CustomerId = 8 });
+            //if (result.Success == true)
+            //{
+            //    Console.WriteLine(result.Message);
+            //}
+            //else
+            //{
+            //    Console.WriteLine(result.Message);
+            //}
+
+            RentalTest();
+
+
+        }
+
+        private static void RentalTest()
+        {
+            RentalManager rentalManager = new RentalManager(new EfRentalDal());
+            var result = rentalManager.GetCarRentalDetails();
+            foreach (var rental in result.Data)
+            {
+                Console.WriteLine( " {0} :  {1} TL : {2} : {3}   ", rental.CarName, rental.DailyPrice, rental.CustomerName, rental.RentDate);
+            }
+        }
+
+        private static void CarTest()
+        {
             CarManager carManager = new CarManager(new EfCarDal());
-            foreach (var car in carManager.GetAll())
+            var result = carManager.GetCarDetails();
+            Console.WriteLine("Araba ismi --- Rengi --- Günlük fiyat");
+            if (result.Success == true)
             {
-                Console.WriteLine(car.Description);
+                foreach (var car in result.Data)
+                { 
+                    Console.WriteLine(" {0} : {1} : {2} TL ", car.CarName, car.ColorName , car.DailyPrice);
+                }
             }
-
-
-            //GetCarsByBrandId
-            Console.WriteLine("----------");
-            foreach (var car in carManager.GetAll())
+            else
             {
-                Console.WriteLine(car.CarName + " : " + car.Description);
+                Console.WriteLine(result.Message);
             }
-
-
-            Console.WriteLine("----------Bütün Renkleri sırala----------");
-
-
-            ColorManager colorManager = new ColorManager(new EfColorDal());
-            foreach (var color in colorManager.GetAll())
-            {
-                Console.WriteLine(color.ColorId + " : " + color.ColorName);
-            }
-
-            Console.WriteLine("----------Markaların id leri----------");
-
-
-            BrandManager brandManager = new BrandManager(new EfBrandDal());
-            foreach (var brand in brandManager.GetAll())
-            {
-                Console.WriteLine(brand.BrandId + " : " + brand.BrandName);
-            }
-
-
         }
     }
 }
