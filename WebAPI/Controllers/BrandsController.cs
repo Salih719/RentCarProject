@@ -66,7 +66,7 @@ namespace WebAPI.Controllers
         [HttpGet("getallbybrandid")]
         public IActionResult GetAllByBrandId(int brandId)
         {
-            var result = _brandService.GetAllByBrandId(brandId);
+            var result = _brandService.GeyById(brandId);
             if (result.Success)
             {
                 return Ok(result);

@@ -30,7 +30,7 @@ namespace DataAccess.Concrete.EntityFramework
                              {
                                  Id = rnt.Id,
                                  CustomerName = u.FirstName + " " + u.LastName,
-                                 CarName = c.Description,
+                                 CarName = c.CarName,
                                  DailyPrice = c.DailyPrice,
                                  RentDate = rnt.RentDate,
                                  ReturnDate = rnt.ReturnDate

@@ -2,6 +2,7 @@
 using Business.BusinessAspects;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Validation;
 using Core.Utilities;
 using DataAccess.Abstract;
@@ -10,6 +11,7 @@ using Entities.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Transactions;
 
 namespace Business.Concrete
 {
@@ -23,11 +25,37 @@ namespace Business.Concrete
 
         [SecuredOperation("car.List,admin")]
         [ValidationAspect(typeof(CarValidator))]
+        [CacheRemoveAspect("ICarService.Get")]
         public IResult AddCar(Car car)
         {
             _carDal.Add(car);
 
             return new SuccessResult(Messages.CarAdded);
+        }
+
+        public IResult AddTransactionalTest(Car car)
+        {
+            using (TransactionScope scope = new TransactionScope())
+            {
+                try
+                {
+                    AddCar(car);
+                    if (car.DailyPrice < 10)
+                    {
+                        throw new Exception("");
+                    }
+
+                    AddCar(car);
+                    scope.Complete();
+                }
+                catch (Exception)
+                {
+                    scope.Dispose();
+
+                }
+            }
+
+            return null;
         }
 
         public IResult Delete(Car car)
@@ -36,7 +64,8 @@ namespace Business.Concrete
             return new SuccessResult(Messages.CarDeleted);
         }
 
-        [SecuredOperation("admin")]
+        //[SecuredOperation("admin")]
+        [CacheAspect]
         public IDataResult<List<Car>> GetAll()
         {
             //if (DateTime.Now.Hour == 22)
@@ -47,9 +76,15 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(),Messages.CarsListed);
         }
 
+        [CacheAspect]
         public IDataResult<Car> GetById(int id)
         {
             return new SuccessDataResult<Car>(_carDal.Get(c => c.Id == id));
+        }
+
+        public IDataResult<CarDetailDto> GetCarDetail(int id)
+        {
+            return new SuccessDataResult<CarDetailDto>(_carDal.GetCarDetail(x => x.CarId == id));
         }
 
         public IDataResult<List<CarDetailDto>> GetCarDetails()
@@ -57,16 +92,17 @@ namespace Business.Concrete
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails());
         }
 
-        public IDataResult<List<Car>> GetCarsByBrandId(int id)
+        public IDataResult<List<Car>> GetCarsByBrandId(int brandId)
         {
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll(b=>b.BrandId == id));
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(b=>b.BrandId == brandId));
         }
 
-        public IDataResult<List<Car>> GetCarsByColorId(int id)
+        public IDataResult<List<Car>> GetCarsByColorId(int colorId)
         {
-            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c=>c.ColorId == id));
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c=>c.ColorId == colorId));
         }
 
+        [CacheRemoveAspect("ICarService.Get")]
         public IResult Update(Car car)
         {
             return new SuccessResult(Messages.CarUpdated);

@@ -105,5 +105,15 @@ namespace Business.Concrete
             _carImageDal.Update(carImage);
             return new SuccessResult(Messages.CarImageUpdated);
         }
+
+        public IDataResult<List<CarImage>> GetCarImageByCarId(int carId)
+        {
+            IResult result = BusinessRules.Run(CheckIfCarImageImageCountNull(carId));
+            if (result !=null)
+            {
+                return new ErrorDataResult<List<CarImage>>(result.Message);
+            }
+            return new SuccessDataResult<List<CarImage>>(_carImageDal.GetAll(c=>c.CarId == carId));
+        }
     }
 }
